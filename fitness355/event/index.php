@@ -14,20 +14,20 @@
 		?>
 	</head>
 
-	<body style="background-color:LightGreen">
+	<body <?php echo Template::$bg;?>>
 		<?php
 			Template::navigation("../");
 		?>
 		
-		<div class="container">
+		<div class="container" style="width:95%">
     		<div class="row">
     			<h3>Events</h3>
     		</div>
 			<div class="row">
-				<table class="table table-striped table-bordered" style="background-color:lightgrey">
+				<table class="table table-striped table-bordered" style="background-color:LightGrey">
 					<thead>
 						<tr>
-							<th style="min-width:275px">Actions</th>
+							<th style="width:275px;min-width:275px;max-width:275px;">Actions</th>
 							<th>User</th>
 							<th>Activity</th>
 							<th>Date</th>
@@ -90,8 +90,9 @@
 					</tbody>
 				</table>
 			</div>
+			<hr/>
 			<p>
-				<a href="create.php" class="btn btn-primary"><i class="fa fa-plus fa-lg"></i> Create New</a>
+				<a href="create.php" class="btn btn-primary"><i class="fa fa-plus fa-lg"></i> Create New</a> 
 			</p>	
 		</div> <!-- /container -->
 	</body>

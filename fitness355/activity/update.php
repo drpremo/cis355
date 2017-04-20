@@ -103,7 +103,6 @@
 						<div class="controls">
 							<input name="Name" type="text" placeholder="Name"
 							       value="<?php echo !empty($Name)?$Name:'';?>">
-								   
 							<?php if (!empty($NameError)): ?>
 								<span class="help-inline"><?php echo $NameError;?></span>
 							<?php endif; ?>

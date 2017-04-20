@@ -29,14 +29,17 @@
 				// keep track validation errors
 				
 				// keep track post values
-				$User = $_POST['User'];
-				$Activity = $_POST['Activity'];
+				$Id_User = $_POST['User'];
+				$Id_Activity = $_POST['Activity'];
 				$Date = $_POST['Date'];
 				$StartTime = $_POST['StartTime'];
 				$EndTime = $_POST['EndTime'];
 				$TotalDuration = $_POST['TotalDuration'];
 				$WorkoutDuration = $_POST['WorkoutDuration'];
 				$MaxHeartRate = $_POST['MaxHeartRate'];
+				$Distance = $_POST['Distance'];
+				$Resistance = $_POST['Resistance'];
+				$Repititions = $_POST['Repititions'];
 				
 				// validate input
 				$valid = true;
@@ -70,13 +73,11 @@
 					$valid = false;
 				}
 				
-				// HasDistance, HasResistance, and HasRepititions did not need validation because
-				// null values return 0.	
 				
 				// update data
 				if ($valid) {
 					$pdo = Database::connect();
-					$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+					$pdo -> setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 					
 					$sql = "SELECT *
 							FROM Event
@@ -88,15 +89,61 @@
 							FROM Activity
 							WHERE IdA = '$ActivityId'";
 					foreach ($pdo -> query($sql) as $row) { $ActivityName = $row['Name']; }
+					foreach ($pdo -> query($sql) as $row) { $intensity = $row['Intensity']; }
+					foreach ($pdo -> query($sql) as $row) { $hasDistance = $row['HasDistance']; }
+					foreach ($pdo -> query($sql) as $row) { $hasResistance = $row['HasResistance']; }
+					foreach ($pdo -> query($sql) as $row) { $hasRepititions = $row['HasRepititions']; }
+					if (empty($hasDistance)) $hasDistance = 0;
+					if (empty($hasResistance)) $hasResistance = 0;
+					if (empty($hasRepititions)) $hasRepititions = 0;
+					if (empty($Distance)) $Distance = 0;
+					if (empty($Resistance)) $Resistance = 0;
+					if (empty($Repititions)) $Repititions = 0;
+
 					$sql = "SELECT *
 							FROM User
 							WHERE IdU = '$UserId'";
 					foreach ($pdo -> query($sql) as $row) { $UserName = ($row['FName'] . ' ' . $row['LName']); }
+					foreach ($pdo -> query($sql) as $row) { $birth = $row['Birth']; }
+					foreach ($pdo -> query($sql) as $row) { $gender = $row['Gender']; }
+					foreach ($pdo -> query($sql) as $row) { $height = $row['Height']; }
+					foreach ($pdo -> query($sql) as $row) { $weight = $row['Weight']; }
+					foreach ($pdo -> query($sql) as $row) { $level = $row['ActivityLevel']; }
 					
-					$sql = "UPDATE Activity set Name = ?, Intensity = ?, HasDistance = ?, HasResistance = ?, HasRepititions = ?
-							WHERE IdA = ?";
-					$q = $pdo->prepare($sql);
-					$q->execute(array($Name,$Intensity,$HasDistance,$HasResistance,$HasRepititions,$id));
+					// generate age and optimal heart rate from date of birth
+					$age = (strtotime($Date) - strtotime($birth)) / 60 / 60 / 24 / 365.25;
+					$heartLow = (220 - $age) * 0.5;
+					$heartMid = (220 - $age) * 0.7;
+					$heartHigh = (220 - $age) * 0.85;
+					
+					// fix level multiplier
+					if ($level == 0) $level = 1.2;
+					if ($level == 1) $level = 1.375;
+					if ($level == 2) $level = 1.55;
+					if ($level == 3) $level = 1.725;
+					if ($level == 4) $level = 1.9;
+					
+					// calculate dailyBMR using the Harris-Benedict BMR equation revised by Roza and Shizgal in 1984
+					// https://en.wikipedia.org/wiki/Harris%E2%80%93Benedict_equation
+					if ($gender == "M") $dailyBMR = (88.362 + (6.07677698 * $weight) + (12.18946 * $height) - (5.677 * $age)) * $level;
+					if ($gender == "F") $dailyBMR = (655.1 + (4.1943686 * $weight) + (7.86892 * $height) - (4.330 * $age)) * $level;
+
+					$idleTime = $TotalDuration - $WorkoutDuration;
+					$CaloriesBurned = $dailyBMR / 24 / 60 * ($idleTime + $WorkoutDuration * $intensity) * (($MaxHeartRate / $heartMid) ** 0.5);
+					
+					$sql = "UPDATE Event set IdActivity = ?, IdUser = ?,
+											 Date = ?, StartTime = ?, EndTime = ?,
+											 TotalDuration = ?, WorkoutDuration = ?,
+											 MaxHeartRate = ?, Distance = ?, Resistance = ?, Repititions = ?,
+											 CaloriesBurned = ?
+							WHERE IdE = ?";
+					
+					$q = $pdo -> prepare($sql);
+					$q -> execute(array($Id_Activity, $Id_User,
+										$Date, $StartTime, $EndTime,
+										$TotalDuration, $WorkoutDuration,
+										$MaxHeartRate, $Distance, $Resistance, $Repititions,
+										$CaloriesBurned, $id));
 					Database::disconnect();
 					session_start();
 					$_SESSION['showmessage'] = 2;
@@ -138,7 +185,7 @@
 		</style>
 	</head>
 
-	<body style="background-color:LightGreen" onload="hideDetails()">
+	<body <?php echo Template::$bg;?> onload="hideDetails()">
 		<?php 
 			Template::navigation("../");
 		?>
@@ -150,162 +197,165 @@
 				</div>
 				
 				<form class="form-horizontal" action="update.php?Id=<?php echo $id;?>" method="post">
-				
-					<div class=col-lg-3>
-						<div class="control-group <?php echo !empty($NameError)?'error':'';?>">
-							<label class="control-label">Name</label>
-							<div class="controls">
-								<select name="User">
-									<?php
-										$pdo = Database::connect();
-										$sql = 'SELECT *
-												FROM User
-												ORDER BY LName';
-										foreach ($pdo->query($sql) as $row) {
-											if (!empty($row['FName']) || !empty($row['lname'])) { 
-												if ($row['IdU'] == $data['IdUser']) {
-													echo '<option value="' . $row['IdU'] . '" selected="selected">' . $row['LName'] . ', ' . $row['FName'] . '</option>';
-												} else {
-													echo '<option value="' . $row['IdU'] . '">' . $row['FName'] . ' ' . $row['LName'] . '</option>';
+					<div class="row">
+						<div class="col-lg-2 col-md-3 col-sm-3 col-xs-4">
+							<div class="control-group <?php echo !empty($NameError)?'error':'';?>">
+								<label class="control-label">Name</label>
+								<div class="controls">
+									<select name="User">
+										<?php
+											$pdo = Database::connect();
+											$sql = 'SELECT *
+													FROM User
+													ORDER BY LName';
+											foreach ($pdo->query($sql) as $row) {
+												if ($_SESSION['admin'] == 1 || $_SESSION['user'] == $row['Username']) {
+													if (!empty($row['FName']) || !empty($row['Lname'])) { 
+														if ($row['IdU'] == $data['IdUser']) {
+															echo '<option value="' . $row['IdU'] . '" selected="selected">' . $row['LName'] . ', ' . $row['FName'] . '</option>';
+														} else {
+															echo '<option value="' . $row['IdU'] . '">' . $row['LName'] . ', ' . $row['FName'] . '</option>';
+														}
+													}
 												}
 											}
-										}
-									?>
-								</select>
+										?>
+									</select>
+								</div>
 							</div>
-						</div>
-						
-						<div class="control-group <?php echo !empty($ActivityError)?'error':'';?>">
-							<label class="control-label">Activity</label>
-							<div class="controls">
-								<select name="Activity"
-										onchange="hideDetails()" id="inActivity" >
-									<?php
-										$pdo = Database::connect();
-										$sql = 'SELECT *
-												FROM Activity
-												ORDER BY Name';
-										foreach ($pdo->query($sql) as $row) {
-											if ($row['IdA'] == $data['IdActivity']) {
-												echo '<option value="' . $row['IdA'] . '" selected="selected">' . $row['Name'] . '</option>';
-											} else {
-												echo '<option value="' . $row['IdA'] . '">' . $row['Name'] . '</option>';
+							
+							<div class="control-group <?php echo !empty($ActivityError)?'error':'';?>">
+								<label class="control-label">Activity</label>
+								<div class="controls">
+									<select name="Activity"
+											onchange="hideDetails()" id="inActivity" >
+										<?php
+											$pdo = Database::connect();
+											$sql = 'SELECT *
+													FROM Activity
+													ORDER BY Name';
+											foreach ($pdo->query($sql) as $row) {
+												if ($row['IdA'] == $data['IdActivity']) {
+													echo '<option value="' . $row['IdA'] . '" selected="selected">' . $row['Name'] . '</option>';
+												} else {
+													echo '<option value="' . $row['IdA'] . '">' . $row['Name'] . '</option>';
+												}
 											}
-										}
-									?>
-								</select>
+										?>
+									</select>
+								</div>
+							</div>
+							
+							<div class="control-group">
+								<label class="control-label">Date</label>
+								<div class="controls">
+									<input name="Date" type="date" placeholder="Date"
+										   value="<?php echo !empty($Date)?$Date:'';?>"/>
+									<?php if (!empty($DateError)): ?>
+										<span class="help-inline"><?php echo $DateError;?></span>
+									<?php endif; ?>
+								</div>
+							</div>
+							
+							<div class="control-group">
+								<label class="control-label">Start Time</label>
+								<div class="controls">
+									<input name="StartTime" type="time" placeholder="Start Time"
+										   value="<?php echo !empty($StartTime)?$StartTime:'';?>"
+										   onkeyup="updateDuration()" id="inStartTime"/>
+									<?php if (!empty($StartTimeError)): ?>
+										<span class="help-inline"><?php echo $StartTimeError;?></span>
+									<?php endif; ?>
+								</div>
+							</div>
+							
+							<div class="control-group">
+								<label class="control-label">End Time</label>
+								<div class="controls">
+									<input name="EndTime" type="time" placeholder="End Time"
+										   value="<?php echo !empty($EndTime)?$EndTime:'';?>"
+										   onkeyup="updateDuration()" id="inEndTime">
+									<?php if (!empty($EndTimeError)): ?>
+										<span class="help-inline"><?php echo $EndTimeError;?></span>
+									<?php endif; ?>
+								</div>
 							</div>
 						</div>
-						
-						<div class="control-group">
-							<label class="control-label">Date</label>
-							<div class="controls">
-								<input name="Date" type="date" placeholder="Date"
-									   value="<?php echo !empty($Date)?$Date:'';?>"/>
-								<?php if (!empty($DateError)): ?>
-									<span class="help-inline"><?php echo $DateError;?></span>
-								<?php endif; ?>
+						<div class="col-lg-1 col-md-1 col-sm-1 col-xs-1">
+						</div>
+						<div class="col-lg-2 col-md-3 col-sm-3 col-xs-4">
+							<div class="control-group">
+								<label class="control-label">Total Duration</label>
+								<div class="controls">
+									<input name="TotalDuration" type="number" placeholder="Total Duration"
+										   value="<?php echo !empty($TotalDuration)?$TotalDuration:'';?>" 
+											id="inTotalDuration">
+									<?php if (!empty($TotalDurationError)): ?>
+										<span class="help-inline"><?php echo $TotalDurationError;?></span>
+									<?php endif; ?>
+								</div>
 							</div>
-						</div>
-						
-						<div class="control-group">
-							<label class="control-label">Start Time</label>
-							<div class="controls">
-								<input name="StartTime" type="time" placeholder="Start Time"
-									   value="<?php echo !empty($StartTime)?$StartTime:'';?>"
-									   onkeyup="updateDuration()" id="inStartTime"/>
-								<?php if (!empty($StartTimeError)): ?>
-									<span class="help-inline"><?php echo $StartTimeError;?></span>
-								<?php endif; ?>
+							
+							<div class="control-group">
+								<label class="control-label">Workout Duration</label>
+								<div class="controls">
+									<input name="WorkoutDuration" type="number" placeholder="Workout Duration"
+										   value="<?php echo !empty($WorkoutDuration)?$WorkoutDuration:'';?>"
+										   onchange="setDurationManual()" id="inWorkoutDuration">
+									<?php if (!empty($WorkoutDurationError)): ?>
+										<span class="help-inline"><?php echo $WorkoutDurationError;?></span>
+									<?php endif; ?>
+								</div>
 							</div>
-						</div>
-						
-						<div class="control-group">
-							<label class="control-label">End Time</label>
-							<div class="controls">
-								<input name="EndTime" type="time" placeholder="End Time"
-									   value="<?php echo !empty($EndTime)?$EndTime:'';?>"
-									   onkeyup="updateDuration()" id="inEndTime">
-								<?php if (!empty($EndTimeError)): ?>
-									<span class="help-inline"><?php echo $EndTimeError;?></span>
-								<?php endif; ?>
+							
+							<div class="control-group">
+								<label class="control-label">Max Heart Rate</label>
+								<div class="controls">
+									<input name="MaxHeartRate" type="number" placeholder="Max Heart Rate"
+										   value="<?php echo !empty($MaxHeartRate)?$MaxHeartRate:'';?>"
+										   id="inMaxHeartRate"/>
+									<?php if (!empty($MaxHeartRateError)): ?>
+										<span class="help-inline"><?php echo $MaxHeartRateError;?></span>
+									<?php endif; ?>
+								</div>
 							</div>
-						</div>
-						
-						<div class="control-group">
-							<label class="control-label">Total Duration</label>
-							<div class="controls">
-								<input name="TotalDuration" type="number" placeholder="Total Duration"
-									   value="<?php echo !empty($TotalDuration)?$TotalDuration:'';?>" 
-										id="inTotalDuration">
-								<?php if (!empty($TotalDurationError)): ?>
-									<span class="help-inline"><?php echo $TotalDurationError;?></span>
-								<?php endif; ?>
+							<div class="control-group" id="Distance" style="display:block">
+								<label class="control-label">Distance</label>
+								<div class="controls">
+									<input name="Distance" type="number" placeholder="Distance"
+										   value="<?php echo !empty($Distance)?$Distance:'';?>"
+										   id="inDistance"/>
+								</div>
 							</div>
-						</div>
-						
-						<div class="control-group">
-							<label class="control-label">Workout Duration</label>
-							<div class="controls">
-								<input name="WorkoutDuration" type="number" placeholder="Workout Duration"
-									   value="<?php echo !empty($WorkoutDuration)?$WorkoutDuration:'';?>"
-									   onchange="setDurationManual()" id="inWorkoutDuration">
-								<?php if (!empty($WorkoutDurationError)): ?>
-									<span class="help-inline"><?php echo $WorkoutDurationError;?></span>
-								<?php endif; ?>
+							
+							<div class="control-group" id="Resistance" style="display:block">
+								<label class="control-label">Resistance</label>
+								<div class="controls">
+									<input name="Resistance" type="number" placeholder="Resistance"
+										   value="<?php echo !empty($Resistance)?$Resistance:'';?>"
+										   id="inResistance"/>
+								</div>
 							</div>
-						</div>
-						
-						<div class="control-group">
-							<label class="control-label">Max Heart Rate</label>
-							<div class="controls">
-								<input name="MaxHeartRate" type="number" placeholder="Max Heart Rate"
-									   value="<?php echo !empty($MaxHeartRate)?$MaxHeartRate:'';?>"
-									   id="inMaxHeartRate"/>
-								<?php if (!empty($MaxHeartRateError)): ?>
-									<span class="help-inline"><?php echo $MaxHeartRateError;?></span>
-								<?php endif; ?>
-							</div>
-						</div>
-					
-						<div class="form-actions">
-							<br/>
-							<button type="submit" class="btn btn-success">Update</button>
-							<a class = "btn btn-default" href = ".">Back</a>
-						</div>
-					</div>
-					
-					<div class="col-lg-6">
-						<br/>
-						<br/>
-						<br/>
-						<div class="control-group" id="Distance" style="display:block">
-							<label class="control-label">Distance</label>
-							<div class="controls">
-								<input name="Distance" type="number" placeholder="Distance"
-									   value="<?php echo !empty($Distance)?$Distance:'';?>"
-									   id="inDistance"/>
-							</div>
-						</div>
-						
-						<div class="control-group" id="Resistance" style="display:block">
-							<label class="control-label">Resistance</label>
-							<div class="controls">
-								<input name="Resistance" type="number" placeholder="Resistance"
-									   value="<?php echo !empty($Resistance)?$Resistance:'';?>"
-									   id="inResistance"/>
-							</div>
-						</div>
-						
-						<div class="control-group" id="Repititions" style="display:block">
-							<label class="control-label">Repititions</label>
-							<div class="controls">
-								<input name="Repititions" type="number" placeholder="Repititions"
-									   value="<?php echo !empty($Repititions)?$Repititions:'';?>"
-									   id="inRepititions"/>
+							
+							<div class="control-group" id="Repititions" style="display:block">
+								<label class="control-label">Repititions</label>
+								<div class="controls">
+									<input name="Repititions" type="number" placeholder="Repititions"
+										   value="<?php echo !empty($Repititions)?$Repititions:'';?>"
+										   id="inRepititions"/>
+								</div>
 							</div>
 						</div>
 					</div>
+					<hr/>
+					
+					<div class="form-actions">
+						<br/>
+						<button type="submit" class="btn btn-success">Update</button>
+						<a class = "btn btn-default" href = ".">Back</a>
+					</div>
+					
+					
 				</form>
 			</div>
 		</div> <!-- /container -->

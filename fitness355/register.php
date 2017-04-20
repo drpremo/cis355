@@ -15,8 +15,8 @@
 			if (isset($_POST['register_btn'])) {
 				$username = $_POST['username'];
 				$email = $_POST['email'];
-				$password = $_POST['password'];
-				$password2 = $_POST['password2'];
+				$password = md5($_POST['password']);
+				$password2 = md5($_POST['password2']);
 				
 				if ($password == $password2) {
 					require 'Database.php';
@@ -46,12 +46,11 @@
 		?>
 	</head>
 	
-	<body style="background-color:LightGreen">
+	<body <?php echo Template::$bg;?>>
 		<?php 
 			Template::navigation("");
 		?>
-	
-	
+		
 		<div class="container">
 			<div class="row">
 				<h3>Register, login and logout user php mysql</h3>

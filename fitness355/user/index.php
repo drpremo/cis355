@@ -14,20 +14,20 @@
 		?>
 	</head>
 
-	<body style="background-color:LightGreen">
+	<body <?php echo Template::$bg;?>>
 		<?php
 			Template::navigation("../");
 		?>
 		
-		<div class="container">
+		<div class="container" style="width:95%">
     		<div class="row">
     			<h3>Users</h3>
     		</div>
-			<div class="row">				
+			<div class="row">
 				<table class="table table-striped table-bordered" style="background-color:lightgrey">
 					<thead>
 						<tr>
-							<th style="min-width:275px">Actions</th>
+							<th style="width:275px;min-width:275px;max-width:275px;">Actions</th>
 							<th>Name</th>
 							<th>Username</th>
 							<th>Mobile Number</th>
@@ -49,9 +49,9 @@
 								if ($_SESSION['admin'] == 1 || $_SESSION['user'] == $row['Username']) {
 									echo '<tr>';
 									echo '    <td width=273>';
-									echo '    <a class="btn btn-default" href="read.php?Id='.$row['Id'] . '"><i class="fa fa-newspaper-o"></i> Read</a>';
-									echo '    <a class="btn btn-success" href="update.php?Id='.$row['Id'].'"><i class="fa fa-pencil"></i> Update</a>';
-									echo '    <a class="btn btn-danger" href="delete.php?Id='.$row['Id'].'"><i class="fa fa-trash"></i> Delete</a>';
+									echo '    <a class="btn btn-default" href="read.php?Id='.$row['IdU'] . '"><i class="fa fa-newspaper-o"></i> Read</a>';
+									echo '    <a class="btn btn-success" href="update.php?Id='.$row['IdU'].'"><i class="fa fa-pencil"></i> Update</a>';
+									echo '    <a class="btn btn-danger" href="delete.php?Id='.$row['IdU'].'"><i class="fa fa-trash"></i> Delete</a>';
 									echo '    </td>';
 									echo '    <td>' . $row['FName'] . ' ' . $row['LName'] . '</td>';
 									echo '    <td>' . $row['Username'] . '</td>';
@@ -70,9 +70,11 @@
 					</tbody>
 				</table>
 			</div>
-			<p>
-				<a href="create.php" class="btn btn-primary"><i class="fa fa-plus fa-lg"></i> Create New</a>
-			</p>
+			<hr/>
+			<?php
+				if ($_SESSION['admin'] == 1)
+					echo '<p><a href="create.php" class="btn btn-primary"><i class="fa fa-plus fa-lg"></i> Create New</a></p>';
+			?>
 		</div> <!-- /container -->
 	</body>
 </html>

@@ -14,7 +14,7 @@
 		?>
 	</head>
 	
-	<body style="background-color:LightGreen">
+	<body <?php echo Template::$bg;?>>
 		<?php 
 			Template::navigation("");
 		?>

@@ -31,13 +31,13 @@
 				
 				$sql = "SELECT *
 						FROM User
-						WHERE Id = '$Id'";
+						WHERE IdU = '$Id'";
 				foreach ($pdo -> query($sql) as $row) { $FName = $row['FName']; }
 				foreach ($pdo -> query($sql) as $row) { $LName = $row['LName']; }
 				
 				
 				$sql = "DELETE FROM User
-						WHERE Id = ?";
+						WHERE IdU = ?";
 				$q = $pdo -> prepare($sql);
 				$q -> execute(array($Id));
 				Database::disconnect();

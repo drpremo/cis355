@@ -15,12 +15,12 @@
 		<link href="../css/font-awesome.css" rel="stylesheet" type="text/css"/>
 	</head>
 
-	<body style="background-color:LightGreen">
+	<body <?php echo Template::$bg;?>>
 		<?php 
 			Template::navigation("../");
 		?>
 		
-		<div class="container">
+		<div class="container" style="width:95%">
 			<div class="row">
 				<h3>Activities</h3>
 			</div>
@@ -29,7 +29,7 @@
 					<thead>
 						<tr>
 							<?php if ($_SESSION['admin'] == 1)
-								echo '<th style="min-width:275px">Actions</th>';
+								echo '<th style="width:275px;min-width:275px;max-width:275px;">Actions</th>';
 							?>
 							<th>Name</th>
 							<th>Intensity</th>
@@ -71,9 +71,11 @@
 					</tbody>
 				</table>
 			</div>
-			<p>
-				<a href="create.php" class="btn btn-primary"><i class="fa fa-plus fa-lg"></i> Create New</a>
-			</p>
+			<hr/>
+			<?php
+				if ($_SESSION['admin'] == 1)
+					echo '<p><a href="create.php" class="btn btn-primary"><i class="fa fa-plus fa-lg"></i> Create New</a></p>';
+			?>
 		</div> <!-- /container -->
 	</body>
 </html>

@@ -46,118 +46,53 @@
 					<h3>Read an Event</h3>
 				</div>
 				
-				<div class="form-horizontal" >
-					<div class="control-group">
-						<label class="control-label">ID</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['IdE'];?>
-							</label>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">User ID</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['IdUser'];?>
-							</label>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">Activity ID</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['IdActivity'];?>
-							</label>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">Date</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['Date'];?>
-							</label>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">Start Time</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['StartTime'];?>
-							</label>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">End Time</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['EndTime'];?>
-							</label>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">Total Duration</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['TotalDuration'];?>
-							</label>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">Workout Duration</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['WorkoutDuration'];?>
-							</label>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">Max Heart Rate</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['MaxHeartRate'];?>
-							</label>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">Distance</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['Distance'];?>
-							</label>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">Resistance</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['Resistance'];?>
-							</label>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">Repititions</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['Repititions'];?>
-							</label>
-						</div>
-					</div>
-					
-					<div class="control-group">
-						<label class="control-label">Calories Burned</label>
-						<div class="controls">
-							<label class="checkbox">
-								<?php echo $data['CaloriesBurned'];?>
-							</label>
-						</div>
-					</div>
-					
-					<div class="form-actions">
+				<div class="row">
+					<div class="col-lg-2 col-md-3 col-sm-3 col-xs-4">
+						<label>ID</label>
+						<div class="text-right"><?php echo $data['IdE'];?></div>
 						<br/>
-						<a class="btn btn-default" href=".">Back</a>
+						<label>User ID</label>
+						<div class="text-right"><?php echo $data['IdUser'];?></div>
+						<br/>
+						<label>Activity ID</label>
+						<div class="text-right"><?php echo $data['IdActivity'];?></div>
+						<br/>
+						<label>Date</label>
+						<div class="text-right"><?php echo $data['Date'];?></div>
+						<br/>
+						<label>Start Time</label>
+						<div class="text-right"><?php echo $data['StartTime'];?></div>
+						<br/>
+						<label>End Time</label>
+						<div class="text-right"><?php echo $data['EndTime'];?></div>
+					</div>
+					<div class="col-lg-1 col-md-1 col-sm-1 col-xs-1">
+					</div>
+					<div class="col-lg-2 col-md-3 col-sm-3 col-xs-4">
+						<label>Total Duration</label>
+						<div class="text-right"><?php echo $data['TotalDuration'];?></div>
+						<br/>
+						<label>Workout Duration</label>
+						<div class="text-right"><?php echo $data['WorkoutDuration'];?></div>
+						<br/>
+						<label>Max Heart Rate</label>
+						<div class="text-right"><?php echo $data['MaxHeartRate'];?></div>
+						<br/>
+						<label>Distance</label>
+						<div class="text-right"><?php echo $data['Distance'];?></div>
+						<br/>
+						<label>Resistance</label>
+						<div class="text-right"><?php echo $data['Resistance'];?></div>
+						<br/>
+						<label>Repititions</label>
+						<div class="text-right"><?php echo $data['Repititions'];?></div>
+						<br/>
+						<label>Calories Burned</label>
+						<div class="text-right"><?php echo $data['CaloriesBurned'];?></div>
 					</div>
 				</div>
+				<hr/>
+				<a class="btn btn-default" href=".">Back</a>
 			</div>
 		</div> <!-- /container -->
 	</body>

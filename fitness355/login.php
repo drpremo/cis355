@@ -15,7 +15,7 @@
 			
 			if (isset($_POST['login_btn'])) {
 				$username = $_POST['username'];
-				$password = $_POST['password'];
+				$password = md5($_POST['password']);
 				
 				require 'Database.php';
 				// connect to database
@@ -37,7 +37,11 @@
 					
 					$_SESSION['user'] = $username;
 					$_SESSION['showmessage'] = 2;
-					$_SESSION['message'] = 'Logged in as ' . $_SESSION['user'];
+					if ($_SESSION['admin'] == 1) {
+						$_SESSION['message'] = 'Logged in as admin, ' . $_SESSION['user'];
+					} else {
+						$_SESSION['message'] = 'Logged in as ' . $_SESSION['user'];
+					}
 					header("location:user/"); // redirect to user page
 				} else {
 					$_SESSION['showmessage'] = 2;
@@ -48,7 +52,7 @@
 		?>
 	</head>
 	
-	<body style="background-color:LightGreen">
+	<body <?php echo Template::$bg;?>>
 		<?php
 			Template::navigation("");
 		?>
