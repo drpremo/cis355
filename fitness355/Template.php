@@ -1,11 +1,13 @@
 <?php
 	class Template {
+		public static $bg = 'style="background:linear-gradient(150deg, PaleGreen 0%, Khaki 70%);background-attachment:fixed;"';		
 		
 		public function sources($relation) {
 			echo '<link href = "' . $relation . 'css/bootstrap.css" rel="stylesheet" type="text/css"/>';
 			echo '<link href = "' . $relation . 'css/modern-business.css" rel="stylesheet" type="text/css"/>';
 			echo '<link href = "http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">';
 			echo '<link href = "' . $relation . 'css/toastr.css" rel="stylesheet" type="text/css"/>';
+			echo '<link href = "' . $relation . 'css/fitness355.css" rel="stylesheet" type="text/css"/>';
 			
 			echo '<script src = "' . $relation . 'js/jquery.js"></script>';
 			echo '<script src = "' . $relation . 'js/bootstrap.js"></script>';
